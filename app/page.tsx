@@ -1,5 +1,5 @@
 'use client';
-import {ERA_LABELS,eraCounts,filterEra,usageEra,productStatus,inventoryCsvRows} from '../lib/usage-era.mjs';
+import {ERA_LABELS,ERA_TABS,eraCounts,filterEra,usageEra,productStatus,inventoryCsvRows} from '../lib/usage-era.mjs';
 import Table from '../components/filter-table';
 import InventoryUpload from '../components/inventory-upload';
 import {cellText} from '../lib/table-filter.mjs';
@@ -11,7 +11,7 @@ const nf=(v:any)=>Number(v||0).toLocaleString('ko-KR',{maximumFractionDigits:3})
 const koreaToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const iso=(v:any)=>{const parts=String(v||'').match(/\d+/g);return parts?.length===3?`${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`:''};
 function exportCsv(name:string,rows:any[][]){const q=(v:any)=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replaceAll('"','""')+'"';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));a.download=name+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function EraTabs({records,value,onChange}:any){const counts:any=eraCounts(records);return <div className="era-tabs" role="tablist" aria-label="사용구분">{Object.entries(ERA_LABELS).map(([key,label])=><button type="button" key={key} role="tab" aria-selected={value===key} className={value===key?'active':''} onClick={()=>onChange(key)}>{label}<span>{counts[key]}</span></button>)}</div>}
+function EraTabs({records,value,onChange}:any){const counts:any=eraCounts(records);return <div className="era-tabs" role="tablist" aria-label="사용구분">{ERA_TABS.map(([key,label])=><button type="button" key={key} role="tab" aria-selected={value===key} className={value===key?'active':''} onClick={()=>onChange(key)}>{label}<span>{counts[key]}</span></button>)}</div>}
 export default function Page(){
  const [s,S]=useState<any>(null),[v,V]=useState(0),[tab,T]=useState('home'),[query,Q]=useState(''),[err,E]=useState(''),[ok,O]=useState(''),[connected,C]=useState(false),[time,U]=useState(''),[modal,M]=useState(''),[f,F]=useState<any>({}),[busy,B]=useState(false),[month,Month]=useState('2026-10'),[product,P]=useState('');
  const stockView=useRef<any>(null);
