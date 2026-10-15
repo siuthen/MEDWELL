@@ -22,4 +22,6 @@
 
 .order-material-picker{grid-column:1/-1;min-width:0;display:grid;gap:8px}.order-material-picker label{min-width:0}.order-material-picker input,.order-material-picker select{width:100%;max-width:100%;min-width:0}.material-code-error{color:#b34938;margin:0;font-size:12px}.material-code-match{background:#edf5ef;border:1px solid #dbe9de;border-radius:6px;padding:10px 12px;margin:0;overflow-wrap:anywhere}.material-code-match small{display:block;margin-top:4px;color:#688570}.material-code-hint{margin:0;color:#829589;font-size:12px}
 
-.plan-upload-fields{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr);gap:12px}.plan-upload-fields label{display:flex;flex-direction:column;gap:8px}.plan-number{text-align:right!important}@media(max-width:600px){.plan-upload-fields{grid-template-columns:1fr}}
+.plan-upload-fields{display:grid;grid-template-columns:minmax(140px,1fr) minmax(140px,1fr) minmax(180px,2fr);gap:12px}.plan-upload-fields label{display:flex;flex-direction:column;gap:8px}.plan-number{text-align:right!important}@media(max-width:600px){.plan-upload-fields{grid-template-columns:1fr}}
+
+.plan-product-select{min-width:260px;max-width:360px}.plan-excluded{opacity:.65}.upload-preview td small{display:block}.upload-preview td:has(.plan-product-select){min-width:260px}
