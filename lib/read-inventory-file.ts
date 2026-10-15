@@ -1,5 +1,5 @@
 import {unzipSync,strFromU8} from 'fflate';
-const xml=(text:string)=>{const doc=new DOMParser().parseFromString(text,'application/xml');if(doc.querySelector('parsererror'))throw Error('엑셀 XML을 읽을 수 없습니다.');return doc;};
+const xml=(text:string)=>{const doc=new DOMParser().parseFromString(text,'application/xml');if(doc.getElementsByTagName('parsererror').length)throw Error('엑셀 XML을 읽을 수 없습니다.');return doc;};
 const nodes=(parent:Document|Element,name:string)=>Array.from(parent.getElementsByTagNameNS('*',name));
 function csv(text:string){const rows:string[][]=[];let row:string[]=[],value='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(value);value='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(value);rows.push(row);row=[];value='';}else value+=c;}if(quoted)throw Error('CSV의 따옴표를 확인해주세요.');if(value||row.length){row.push(value);rows.push(row);}return rows;}
 export async function readInventoryFile(file:File){if(file.size>15*1024*1024)throw Error('15MB 이하 파일을 선택해주세요.');if(/\.csv$/i.test(file.name))return [{name:file.name,rows:csv((await file.text()).replace(/^\uFEFF/,''))}];if(!/\.xlsx$/i.test(file.name))throw Error('.xlsx 또는 UTF-8 CSV 파일을 선택해주세요. .xls는 .xlsx로 저장해주세요.');

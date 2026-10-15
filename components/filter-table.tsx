@@ -3,7 +3,7 @@ import {useEffect,useRef,useState,useImperativeHandle} from 'react';
 import {createPortal} from 'react-dom';
 import {Filter,ChevronDown,ArrowUp,ArrowDown,Search} from 'lucide-react';
 import {cellText,compareCells,rowMatches,filterRows} from '../lib/table-filter.mjs';
-const align=(label:string):'left'|'right'|'center'=>/품목코드|자재코드|품목명|품명|부자재|자재명|비고|사유/.test(label)?'left':/수량|발주량|현재고|소요량|증감량|금액|단가|공급가액|세액|부가세|합계|김포창고|오류창고|유상|무상|정상 완제품|관리품/.test(label)?'right':'center';
+const align=(label:string):'left'|'right'|'center'=>/품목코드|제품코드|자재코드|품목명|제품명|품명|부자재|자재명|비고|사유/.test(label)?'left':/수량|발주량|현재고|소요량|증감량|차감량|금액|단가|공급가액|세액|부가세|합계|김포창고|오류창고|유상|무상|정상 완제품|관리품/.test(label)?'right':'center';
 const columnClass=(label:string)=>/비고|사유/.test(label)?'notes-column':/수정/.test(label)?'actions-column':'';
 export default function FilterTable({head,rows,pageSize=15,viewRef}:any){
  const [page,Page]=useState(1),[filters,Filters]=useState<Record<number,any>>({}),[sort,Sort]=useState<any>(null),[menu,Menu]=useState<number|null>(null),[search,SearchText]=useState(''),[draft,Draft]=useState<string[]>([]),[operator,Operator]=useState('contains'),[term,Term]=useState(''),[position,Position]=useState({top:0,left:0});
