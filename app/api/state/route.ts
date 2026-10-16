@@ -20,7 +20,7 @@ export async function POST(request:Request){
  try{
   const body:any=await request.json();
   if(!body||typeof body!=='object'||Array.isArray(body))return response({error:'요청 본문을 확인하세요.'},400);
-  const bulk=body.type==='bulkCreateProductBoms',atomic=bulk||['deleteOrder','deleteReceipt','createDirectProductionPlans','replaceProductionPlanBatch'].includes(body.type);
+  const bulk=body.type==='bulkCreateProductBoms',atomic=bulk||['orderEdit','deleteOrder','deleteReceipt','createDirectProductionPlans','replaceProductionPlanBatch'].includes(body.type);
   if(Object.hasOwn(body,'expectedVersion')){if(body.version!==undefined&&body.version!==body.expectedVersion)return response({error:'version과 expectedVersion이 다릅니다.'},400);body.version=body.expectedVersion;}
   if(bulk&&Object.hasOwn(body,'expectedVersion')){if(body.version!==undefined&&body.version!==body.expectedVersion)return response({error:'version과 expectedVersion이 다릅니다.'},400);body.version=body.expectedVersion;body.payload??={materials:body.materials,products:body.products,canonicalProductReplacements:body.canonicalProductReplacements};}
   if(atomic&&(!Number.isSafeInteger(body.version)||body.version<0||typeof body.requestId!=='string'||!body.requestId.trim()))return response({error:'expectedVersion/version과 requestId를 확인하세요.'},400);
