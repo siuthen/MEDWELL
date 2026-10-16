@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useState,useRef} from 'react';
 import {readInventoryFile} from '../lib/read-inventory-file';
 import {planToday} from '../lib/production-plan.mjs';
 import {parsePlanUploadSheets,planUploadPreview} from '../lib/production-plan-import.mjs';
@@ -12,8 +12,9 @@ import {matchPlanRow} from '../lib/plan-match.mjs';
 import {balances} from '../lib/core.mjs';
 const nf=(v:any)=>Number.isFinite(Number(v))?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:3}):String(v??'');
 export default function ProductionPlanUpload({state,version,onClose,onSaved}:any){
- const [rows,Rows]=useState<any[]>([]),[issues,Issues]=useState<string[]>([]),[error,ErrorText]=useState(''),[busy,Busy]=useState(false),[fileName,FileName]=useState(''),[defaultDate,DefaultDate]=useState(planToday),[baseVersion,BaseVersion]=useState(version),[requestId,RequestId]=useState('');
+ const [rows,RowsState]=useState<any[]>([]),[issues,Issues]=useState<string[]>([]),[error,ErrorText]=useState(''),[busy,Busy]=useState(false),[fileName,FileName]=useState(''),[defaultDate,DefaultDate]=useState(planToday),[baseVersion,BaseVersion]=useState(version),[requestId,RequestId]=useState('');
  const [periodStart,PeriodStart]=useState(''),[periodEnd,PeriodEnd]=useState(''),[periodTouched,PeriodTouched]=useState(false),[original,Original]=useState<Uint8Array|null>(null);
+ const latestRows=useRef<any[]>([]);function Rows(value:any){const next=typeof value==='function'?value(latestRows.current):value;latestRows.current=next;RowsState(next)}
  const [manualPanel,ManualPanel]=useState<number|null>(null);
  const inferred=inferPlanPeriod(rows),start=periodTouched?periodStart:inferred?.periodStart||periodStart,end=periodTouched?periodEnd:inferred?.periodEnd||periodEnd;
  let period:any=null,periodError='',old:any=null;try{period=periodValue(start,end);old=activeBatch(state,period.periodKey);}catch(e:any){periodError=e.message;}
@@ -22,7 +23,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
  const stale=baseVersion!==version;
  const products=state.products.filter((p:any)=>!p.deleted).slice().sort((a:any,b:any)=>a.code.localeCompare(b.code));
  const blocked=busy||!included.length||!!invalid.length||!!issues.length||stale||!defaultDate||!!periodError;
- function update(index:number,patch:any){Rows(old=>old.map((r,i)=>i===index?{...r,...patch}:r));}
+ function update(index:number,patch:any){Rows((old:any[])=>old.map((r,i)=>i===index?{...r,...patch}:r));}
  async function read(file?:File){
   if(!file)return;Busy(true);ErrorText('');Rows([]);Issues([]);Original(null);ManualPanel(null);PeriodTouched(false);PeriodStart('');PeriodEnd('');FileName(file.name);
   try{const result=parsePlanUploadSheets(await readInventoryFile(file),state.products);Rows(result.rows);Issues(result.issues);if(/\.xlsx$/i.test(file.name))Original(new Uint8Array(await file.arrayBuffer()));BaseVersion(version);RequestId(crypto.randomUUID());if(!result.rows.length)ErrorText('생산계획 행을 찾지 못했습니다. 일반 표의 완제품 코드·계획수량 또는 병합형 보고서 구조를 확인해주세요.');}
@@ -35,7 +36,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
   try{const response=await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:baseVersion,requestId,type:'replaceProductionPlanBatch',payload:{rows:payloadRows,allocationMode:'auto',fileName,periodStart:start,periodEnd:end,expectedBatchId:old?.batchId||null}})}),result:any=await response.json();if(!response.ok)throw new Error(result.error);await onSaved(result);onClose();}
   catch(e:any){ErrorText(e.message)}finally{Busy(false)}
  }
- function download(){try{if(!original)return;const bytes=buildProductionXlsx({original,plans:checked,state,balance:(code:string)=>balances(state,code),periodKey:period?.periodKey||'기간 미확정'});downloadXlsx(bytes,autoFileName(fileName));}catch(e:any){ErrorText(e.message)}}
+ function download(){try{if(!original)return;const fresh=planUploadPreview(latestRows.current,state,'김포창고',defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});if(!fresh.included.length||fresh.invalid.length)throw Error(fresh.invalid.map((r:any)=>r.source+': '+r.error).join('\n')||'포함할 계획을 선택하세요.');const bytes=buildProductionXlsx({original,plans:fresh.included,state,balance:(code:string)=>balances(state,code),periodKey:period?.periodKey||'기간 미확정',excludeBatchId:old?.batchId||null});downloadXlsx(bytes,autoFileName(fileName));}catch(e:any){ErrorText(e.message)}}
  return <div className="overlay"><section className="modal inventory-upload" role="dialog" aria-modal="true" aria-label="생산계획 엑셀 업로드">
   <div className="cardhead"><h2>생산계획 엑셀 업로드</h2><button className="secondary" disabled={busy} onClick={onClose}>닫기</button></div>
   <div className="upload-content">
@@ -54,7 +55,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
    {rows.length>0&&<>
     <p><b>{fileName} · 검출 {checked.length}행 · 포함 {included.length}행 · 제외 {checked.length-included.length}행 · 포함 오류 {invalid.length}행</b></p>
     <p className="help">이름과 용량이 유일하게 일치할 때만 자동 추천합니다. 매칭 제품·단위·BOM을 확인해주세요. 모호하거나 등록되지 않은 제품은 직접 선택하거나 제외해야 합니다.</p>
-    <div className="actions"><button className="secondary" disabled={busy||!original} onClick={download}>자동작성 엑셀 내려받기</button>{!original&&<small>CSV는 원본 서식이 없어 자동작성 XLSX 내려받기를 지원하지 않습니다.</small>}<button className="secondary" disabled={busy} onClick={()=>Rows(old=>old.map(r=>({...r,selected:true})))}>전체 선택</button><button className="secondary" disabled={busy} onClick={()=>Rows(old=>old.map(r=>({...r,selected:false})))}>전체 해제</button></div>
+    <div className="actions"><button className="secondary" disabled={blocked||!original} onClick={download}>자동작성 엑셀 내려받기</button>{!original&&<small>CSV는 원본 서식이 없어 자동작성 XLSX 내려받기를 지원하지 않습니다.</small>}<button className="secondary" disabled={busy} onClick={()=>Rows((old:any[])=>old.map(r=>({...r,selected:true})))}>전체 선택</button><button className="secondary" disabled={busy} onClick={()=>Rows((old:any[])=>old.map(r=>({...r,selected:false})))}>전체 해제</button></div>
     <div className="tablewrap upload-preview"><table><thead><tr>{['포함','순번 / 원본 위치','원본 품명','용량','매칭 제품','제품코드 / 정식 제품명','계획일','계획수량','BOM 버전 / 상태','비고','오류'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>
      {checked.map((r:any,i:number)=><tr key={i} className={r.selected===false?'plan-excluded':''}>
       <td><input type="checkbox" aria-label={r.source+' 포함'} checked={r.selected!==false} disabled={busy} onChange={e=>update(i,{selected:e.target.checked})}/></td>
