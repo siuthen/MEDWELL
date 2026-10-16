@@ -18,7 +18,16 @@ export async function POST(request:Request){
  const actor='공용 접속';
  const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return response({error:'허용되지 않은 요청입니다.'},403);
  try{
-  const body:any=await request.json();const r=await read();const state=JSON.parse(r!.payload);
+  const body:any=await request.json();
+  if(!body||typeof body!=='object'||Array.isArray(body))return response({error:'요청 본문을 확인하세요.'},400);
+  const bulk=body.type==='bulkCreateProductBoms';
+  if(bulk&&Object.hasOwn(body,'expectedVersion')){if(body.version!==undefined&&body.version!==body.expectedVersion)return response({error:'version과 expectedVersion이 다릅니다.'},400);body.version=body.expectedVersion;body.payload??={materials:body.materials,products:body.products,canonicalProductReplacements:body.canonicalProductReplacements};}
+  if(bulk&&(!Number.isSafeInteger(body.version)||body.version<0||typeof body.requestId!=='string'||!body.requestId.trim()))return response({error:'expectedVersion/version과 requestId를 확인하세요.'},400);
+  if(bulk&&body.payload&&((body.payload.expectedVersion!==undefined&&body.payload.expectedVersion!==body.version)||(body.payload.requestId!==undefined&&body.payload.requestId!==body.requestId)))return response({error:'요청 본문과 envelope의 version/requestId가 다릅니다.'},400);
+  // Master import must not seed or persist a migration before it has been fully validated.
+  if(bulk&&!env.DB)throw new Error('서버 데이터베이스 연결이 필요합니다.');
+  const r=bulk?await env.DB!.prepare('SELECT version,payload FROM workspace_state WHERE id=?').bind('team').first():await read();
+  if(!r)throw new Error('운영 데이터를 찾을 수 없습니다.');const state=JSON.parse(r.payload);
   const authorized=await financeAllowed(request,env.FINANCE_SESSION_SECRET);
   const visible=(state:any)=>authorized?state:publicState(state);
   if(!authorized&&['close','reopen'].includes(body.type))return response({error:'월 마감 비밀번호를 입력해주세요.'},403);
