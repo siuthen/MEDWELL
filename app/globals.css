@@ -42,3 +42,5 @@
 .tablewrap table td{vertical-align:middle}
 
 .closing-missing{padding:12px 16px;background:#f4f7f5;border:1px solid #dce6df;border-radius:6px;color:#54675a;font-size:12px}
+
+.purchase-table .expected-today>td{background:#fff3d9}.purchase-table .expected-today:hover>td{background:#ffedc5}
