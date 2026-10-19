@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {seed,migrate,apply,balances,closing} from '../lib/core.mjs';
+const fixture=()=>{const s=seed({bom:[],purchase:[]},[]);s.materials=[{code:'M1',name:'용기'}];s.opening={M1:{total:100,error:20}};return migrate(s);};
+const payload=(date='2026-10-01')=>({code:'M1',date,warehouse:'오류창고',paid:10,free:2,price:100,tax:10,vendor:'업체'});
+const run=(s,type,p,id=type)=>apply(s,{type,payload:p,requestId:id},'fixture');
+test('기준일 이전 10월 입고 등록: 재고 증가·실제 입고월 마감 집계·재시도 중복 없음',()=>{const s=fixture(),opening=structuredClone(s.opening);run(s,'receipt',payload(),'r');run(s,'receipt',payload(),'r');assert.equal(s.receipts.length,1);assert.equal(balances(s,'M1')['오류창고'],32);assert.equal(closing(s,'2026-10')[0].supply,1000);assert.equal(closing(s,'2026-10')[0].vat,100);assert.deepEqual(s.opening,opening);assert.equal(s.orders.length,0);assert.equal(s.productions.length,0);});
+test('입고 수정도 기준일 이전 허용, 입고월 변경 집계 및 재고 정확성',()=>{const s=fixture();run(s,'receipt',payload('2026-10-19'),'r');run(s,'receiptEdit',{...payload('2026-09-30'),id:'r',paid:20},'edit');assert.equal(s.receipts.length,1);assert.equal(s.receipts[0].date,'2026-09-30');assert.equal(balances(s,'M1')['오류창고'],42);assert.equal(closing(s,'2026-10').length,0);assert.equal(closing(s,'2026-09')[0].supply,2000);});
+test('유효하지 않은 날짜 및 확정 마감월 입고 차단, 실패 시 상태 불변',()=>{for(const date of ['',null,'2026-02-30','2026-13-01','2026-1-01']){const s=fixture(),before=structuredClone(s);assert.throws(()=>run(s,'receipt',payload(date)),/날짜/);assert.deepEqual(s,before);}const s=fixture();s.closes['2026-10']={};const before=structuredClone(s);assert.throws(()=>run(s,'receipt',payload()),/마감월/);assert.deepEqual(s,before);});
+test('입고 수정의 기존월/대상월 마감 잠금 유지, 다른 전표 기준일 제한 유지',()=>{for(const month of ['2026-10','2026-09']){const s=fixture();run(s,'receipt',payload(),'r');s.closes[month]={};const before=structuredClone(s);assert.throws(()=>run(s,'receiptEdit',{...payload('2026-09-30'),id:'r'},'edit'),/마감월/);assert.deepEqual(s,before);}const s=fixture();assert.throws(()=>run(s,'order',{code:'M1',date:'2026-10-01',qty:10,vendor:'업체'}),/기초재고/);});
