@@ -8,7 +8,7 @@ for ref in ['J8',*[f'Q{r}' for r in range(8,14)]]:
 for r in range(8,131):assert s[f'R{r}'].value is None
 d=w['BOM자동계산']
 for r in range(2,d.max_row+1):
- for col in ['E','I','J','K','L','M']:
+ for col in ['D','G','H','I','J']:
   c=d[f'{col}{r}'];assert isinstance(c.value,(int,float));assert c.data_type=='n';assert c.number_format=='#,##0.###';assert not is_date_format(c.number_format)
 import copy
 assert is_date_format(original['J8'].number_format)

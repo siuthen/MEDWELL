@@ -47,7 +47,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
    <div className="plan-upload-fields"><label>계획 시작월<input type="month" required value={start} disabled={busy} onChange={e=>{PeriodStart(e.target.value);PeriodEnd(end);PeriodTouched(true)}}/></label><label>계획 종료월<input type="month" required value={end} disabled={busy} onChange={e=>{PeriodStart(start);PeriodEnd(e.target.value);PeriodTouched(true)}}/></label></div>
    {rows.length>0&&periodError&&<div className="alert error">{periodError}</div>}
    {old&&<div className="alert"><div><b>교체 대상: {old.fileName} · revision {old.revision} · 활성 계획 {batchRows(state,old.batchId).filter((r:any)=>!r.cancelled).length}건</b><p>기존 계획의 차감을 복원하고 변경 파일을 적용합니다. 복원과 새 차감은 한 번에 저장됩니다.</p></div></div>}
-   <p className="help">.xlsx / UTF-8 CSV · 최대 15MB, 5,000행. 일반 표와 병합형 생산계획 보고서를 지원합니다. 숨김 시트는 제외합니다. 병합형은 시트 기간과 순번의 월로 매월 1일을 사용합니다. 일반 파일에 날짜가 없으면 기본 계획일을 사용합니다. 창고는 부자재별로 자동 배정합니다. 계획기간은 포함한 날짜로 추출하며 수정할 수 있습니다. ‘박스’ 수량은 박스 개수 그대로 적용하며 내용물 수로 곱하지 않습니다.</p>
+   <p className="help">.xlsx / UTF-8 CSV · 최대 15MB, 5,000행. 일반 표와 병합형 생산계획 보고서를 지원합니다. 숨김 시트는 제외합니다. 병합형은 시트 기간과 순번의 월로 매월 1일을 사용합니다. 일반 파일에 날짜가 없으면 기본 계획일을 사용합니다. 부자재는 통합 재고로 표시합니다. 계획기간은 포함한 날짜로 추출하며 수정할 수 있습니다. ‘박스’ 수량은 박스 개수 그대로 적용하며 내용물 수로 곱하지 않습니다.</p>
    {error&&<div className="alert error" role="alert">{error}</div>}
    {!defaultDate&&<div className="alert error">기본 계획일을 선택해주세요.</div>}
    {issues.length>0&&<div className="alert error" role="alert"><div>인식하지 못한 시트를 수정하거나 제거한 뒤 다시 업로드해주세요.<ul>{issues.map(x=><li key={x}>{x}</li>)}</ul></div></div>}

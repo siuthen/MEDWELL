@@ -12,7 +12,7 @@ for row in range(8,131):
  for col in range(1,28):
   if 8<=row<=13 and col in [1,3,4,10,16,17]:continue
   assert s.cell(row,col).value is None,(row,col,s.cell(row,col).value)
-d=w['BOM자동계산'];assert d.max_row==7;assert [d.cell(r,8).value for r in range(2,8)]==[m['name'] for m in v['materials']]
+d=w['BOM자동계산'];assert d.max_row==7;assert [d.cell(r,6).value for r in range(2,8)]==[m['name'] for m in v['materials']]
 assert s.sheet_view.topLeftCell=='A1';assert all(a.activeCell=='A1' and a.sqref=='A1' for a in s.sheet_view.selection)
 if v.get('original'):
  oldraw=base64.b64decode(v['original']);o=openpyxl.load_workbook(io.BytesIO(oldraw));t=o[s.title];assert w.sheetnames[:len(o.sheetnames)]==o.sheetnames

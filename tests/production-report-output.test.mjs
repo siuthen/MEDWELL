@@ -16,9 +16,9 @@ for row in range(8,s.max_row+1):
 for ref in ['J8','J10','Q8','Q9','Q10']:
  c=s[ref];assert isinstance(c.value,(int,float)) and c.data_type=='n';assert c.number_format=='#,##0.###' and not is_date_format(c.number_format)
 for ref in ['Q8','Q9','Q10']:
- assert s[ref].value==50;note=s[ref].comment.text;assert all(t in note for t in ['김포 재고: 30','오류 재고: 20','단위소요량','계획 총필요량','자동 배정'])
+ assert s[ref].value==50;note=s[ref].comment.text;assert all(t in note for t in ['통합 현재고: 50','단위소요량','계획 총필요량','자재코드'])
 assert {'A8:A9','B8:B9','C8:C9','D8:D9','J8:J9'}<=set(str(m) for m in s.merged_cells.ranges)
-d=w['BOM자동계산'];assert d.max_row-1==sum(1 for r in range(8,s.max_row+1) if s[f'P{r}'].value is not None);assert d.cell(d.max_row,3).value in (None,'');assert d.freeze_panes=='A2' and d.auto_filter.ref
+d=w['BOM자동계산'];assert d.max_row-1==sum(1 for r in range(8,s.max_row+1) if s[f'P{r}'].value is not None);assert d.cell(d.max_row,2).value in (None,'');assert d.freeze_panes=='A2' and d.auto_filter.ref
 if v.get('original'):
  raw=base64.b64decode(v['original']);old=openpyxl.load_workbook(io.BytesIO(raw));o=old[s.title];assert w.worksheets[0].max_row==old.worksheets[0].max_row;assert set(str(m) for m in w.worksheets[0].merged_cells.ranges)==set(str(m) for m in old.worksheets[0].merged_cells.ranges)
  assert str(s.page_setup)==str(o.page_setup);assert str(s.page_margins)==str(o.page_margins);assert s.print_title_rows==o.print_title_rows
