@@ -16,6 +16,7 @@ export async function POST(request:Request){
   const body:any=await request.json();if(typeof body.password!=='string'||body.password.length>128)return Response.json({error:'비밀번호를 확인해주세요.'},{status:401,headers});
   if(!matchesDigest(await passwordDigest(body.password,env.FINANCE_PASSWORD_SALT),env.FINANCE_PASSWORD_HASH))return Response.json({error:'비밀번호가 일치하지 않습니다.'},{status:401,headers});
   await env.DB.prepare('DELETE FROM finance_login_limits WHERE id=?').bind(id).run();
-  return Response.json({ok:true},{headers:{...headers,'Set-Cookie':cookie(await issueSession(env.FINANCE_SESSION_SECRET),1800)}});
+  const sessionToken=await issueSession(env.FINANCE_SESSION_SECRET);
+  return Response.json({ok:true,sessionToken},{headers:{...headers,'Set-Cookie':cookie(sessionToken,1800)}});
  }catch(e:any){return Response.json({error:'비밀번호 인증을 처리할 수 없습니다.'},{status:503,headers});}
 }

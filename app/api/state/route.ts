@@ -5,14 +5,15 @@ import {seed,apply,migrate} from '../../../lib/core.mjs';
 import {readClassifiedState} from '../../../lib/persist-usage-era.mjs';
 import {financeAllowed,publicState} from '../../../lib/finance-auth.mjs';
 export const dynamic='force-dynamic';
-const response=(body:any,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
+// Final serialization boundary: /api/state never returns financial fields, even to a valid finance session.
+const response=(body:any,status=200)=>Response.json(body?.state?{...body,state:publicState(body.state)}:body,{status,headers:{'Cache-Control':'no-store'}});
 async function read(){
  if(!env.DB)throw new Error('서버 데이터베이스 연결이 필요합니다.');
  await env.DB.prepare('INSERT OR IGNORE INTO workspace_state (id,version,payload) VALUES (?,0,?)').bind('team',JSON.stringify(seed(raw,review))).run();
  return await readClassifiedState(env.DB);
 }
 export async function GET(request:Request){
- try{const r=await read(),authorized=await financeAllowed(request,env.FINANCE_SESSION_SECRET),state=migrate(JSON.parse(r!.payload));return response({version:r!.version,state:authorized?state:publicState(state),financeAuthorized:authorized,actor:'공용 접속'});}catch(e:any){return response({error:e.message},500);}
+ try{if(!env.DB)throw Error('서버 데이터베이스 연결이 필요합니다.');const r=await env.DB.prepare('SELECT version,payload FROM workspace_state WHERE id=?').bind('team').first<{version:number,payload:string}>();if(!r)throw Error('운영 데이터를 찾을 수 없습니다.');const authorized=await financeAllowed(request,env.FINANCE_SESSION_SECRET),state=migrate(JSON.parse(r.payload));return response({version:r.version,state,financeAuthorized:authorized,actor:'공용 접속'});}catch(e:any){return response({error:e.message},500);}
 }
 export async function POST(request:Request){
  const actor='공용 접속';
