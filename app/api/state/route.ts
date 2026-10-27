@@ -1,3 +1,4 @@
+import {RELEASE} from '../../../lib/release-data.mjs';
 import { env } from 'cloudflare:workers';
 import raw from '../../../data/raw.json';
 import review from '../../../data/inventory-review.json';
@@ -13,7 +14,7 @@ async function read(){
  return await readClassifiedState(env.DB);
 }
 export async function GET(request:Request){
- try{if(!env.DB)throw Error('서버 데이터베이스 연결이 필요합니다.');const r=await env.DB.prepare('SELECT version,payload FROM workspace_state WHERE id=?').bind('team').first<{version:number,payload:string}>();if(!r)throw Error('운영 데이터를 찾을 수 없습니다.');const authorized=await financeAllowed(request,env.FINANCE_SESSION_SECRET),state=migrate(JSON.parse(r.payload));return response({version:r.version,state,financeAuthorized:authorized,actor:'공용 접속'});}catch(e:any){return response({error:e.message},500);}
+ try{if(!env.DB)throw Error('서버 데이터베이스 연결이 필요합니다.');const r=await env.DB.prepare('SELECT version,payload FROM workspace_state WHERE id=?').bind('team').first<{version:number,payload:string}>();if(!r)throw Error('운영 데이터를 찾을 수 없습니다.');const authorized=await financeAllowed(request,env.FINANCE_SESSION_SECRET),stored=JSON.parse(r.payload),releasePending=stored.migrations?.scheduleBom!==RELEASE,state=migrate(stored);return response({version:r.version,state,releasePending,financeAuthorized:authorized,actor:'공용 접속'});}catch(e:any){return response({error:e.message},500);}
 }
 export async function POST(request:Request){
  const actor='공용 접속';
@@ -21,7 +22,7 @@ export async function POST(request:Request){
  try{
   const body:any=await request.json();
   if(!body||typeof body!=='object'||Array.isArray(body))return response({error:'요청 본문을 확인하세요.'},400);
-  const bulk=body.type==='bulkCreateProductBoms',atomic=bulk||['receiptEdit','orderEdit','deleteOrder','deleteReceipt','createDirectProductionPlans','replaceProductionPlanBatch'].includes(body.type);
+  const bulk=body.type==='bulkCreateProductBoms',atomic=bulk||['receipt','receiptEdit','orderEdit','deleteOrder','deleteReceipt','createDirectProductionPlans','replaceProductionPlanBatch','scheduleCreate','scheduleEdit','scheduleDelete','releaseMigration'].includes(body.type);
   if(Object.hasOwn(body,'expectedVersion')){if(body.version!==undefined&&body.version!==body.expectedVersion)return response({error:'version과 expectedVersion이 다릅니다.'},400);body.version=body.expectedVersion;}
   if(bulk&&Object.hasOwn(body,'expectedVersion')){if(body.version!==undefined&&body.version!==body.expectedVersion)return response({error:'version과 expectedVersion이 다릅니다.'},400);body.version=body.expectedVersion;body.payload??={materials:body.materials,products:body.products,canonicalProductReplacements:body.canonicalProductReplacements};}
   if(atomic&&(!Number.isSafeInteger(body.version)||body.version<0||typeof body.requestId!=='string'||!body.requestId.trim()))return response({error:'expectedVersion/version과 requestId를 확인하세요.'},400);

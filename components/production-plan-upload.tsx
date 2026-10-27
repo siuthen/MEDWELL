@@ -2,13 +2,13 @@
 import {useState,useRef} from 'react';
 import {readInventoryFile} from '../lib/read-inventory-file';
 import {planToday} from '../lib/production-plan.mjs';
-import {parsePlanUploadSheets,planUploadPreview} from '../lib/production-plan-import.mjs';
+import {parsePlanUploadSheets,planUploadPreview,selectPlanUploadProduct,updatePlanUploadSearch} from '../lib/production-plan-import.mjs';
 import {inferPlanPeriod,periodValue} from '../lib/production-period.mjs';
 import {activeBatch,batchRows,replacementPreview} from '../lib/production-batch.mjs';
 import {autoFileName,buildProductionXlsx,downloadXlsx} from '../lib/production-xlsx.mjs';
 import MaterialAllocations from './material-allocations';
 import ManualPlanBom from './manual-plan-bom';
-import {matchPlanRow} from '../lib/plan-match.mjs';
+import ProductCombobox from './product-combobox';
 import {balances} from '../lib/core.mjs';
 const nf=(v:any)=>Number.isFinite(Number(v))?Number(v).toLocaleString('ko-KR',{maximumFractionDigits:3}):String(v??'');
 export default function ProductionPlanUpload({state,version,onClose,onSaved}:any){
@@ -21,9 +21,9 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
  const {checked,included,invalid,deductions,payloadRows,allocations}:any=planUploadPreview(rows,state,'김포창고',defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});
  if(period&&included.some((r:any)=>r.date.slice(0,7)<start||r.date.slice(0,7)>end))periodError='포함된 계획일이 선택한 계획기간 밖에 있습니다.';
  const stale=baseVersion!==version;
- const products=state.products.filter((p:any)=>!p.deleted).slice().sort((a:any,b:any)=>a.code.localeCompare(b.code));
  const blocked=busy||!included.length||!!invalid.length||!!issues.length||stale||!defaultDate||!!periodError;
  function update(index:number,patch:any){Rows((old:any[])=>old.map((r,i)=>i===index?{...r,...patch}:r));}
+ function updateProduct(index:number,change:(row:any)=>any){Rows((old:any[])=>old.map((r,i)=>i===index?change(r):r));}
  async function read(file?:File){
   if(!file)return;Busy(true);ErrorText('');Rows([]);Issues([]);Original(null);ManualPanel(null);PeriodTouched(false);PeriodStart('');PeriodEnd('');FileName(file.name);
   try{const result=parsePlanUploadSheets(await readInventoryFile(file),state.products);Rows(result.rows);Issues(result.issues);if(/\.xlsx$/i.test(file.name))Original(new Uint8Array(await file.arrayBuffer()));BaseVersion(version);RequestId(crypto.randomUUID());if(!result.rows.length)ErrorText('생산계획 행을 찾지 못했습니다. 일반 표의 완제품 코드·계획수량 또는 병합형 보고서 구조를 확인해주세요.');}
@@ -54,13 +54,13 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
    {stale&&rows.length>0&&<div className="alert error">서버 데이터가 변경되었습니다. 최신 내용을 기준으로 파일을 다시 선택해주세요.</div>}
    {rows.length>0&&<>
     <p><b>{fileName} · 검출 {checked.length}행 · 포함 {included.length}행 · 제외 {checked.length-included.length}행 · 포함 오류 {invalid.length}행</b></p>
-    <p className="help">이름과 용량이 유일하게 일치할 때만 자동 추천합니다. 매칭 제품·단위·BOM을 확인해주세요. 모호하거나 등록되지 않은 제품은 직접 선택하거나 제외해야 합니다.</p>
+    <p className="help">파일의 품목코드가 등록 제품코드와 정확히 일치할 때만 자동 매칭합니다. 원본 품명은 참고용이며 코드가 없거나 미등록이면 검색 후보에서 직접 선택하거나 제외해야 합니다.</p>
     <div className="actions"><button className="secondary" disabled={blocked||!original} onClick={download}>자동작성 엑셀 내려받기</button>{!original&&<small>CSV는 원본 서식이 없어 자동작성 XLSX 내려받기를 지원하지 않습니다.</small>}<button className="secondary" disabled={busy} onClick={()=>Rows((old:any[])=>old.map(r=>({...r,selected:true})))}>전체 선택</button><button className="secondary" disabled={busy} onClick={()=>Rows((old:any[])=>old.map(r=>({...r,selected:false})))}>전체 해제</button></div>
-    <div className="tablewrap upload-preview"><table><thead><tr>{['포함','순번 / 원본 위치','원본 품명','용량','매칭 제품','제품코드 / 정식 제품명','계획일','계획수량','BOM 버전 / 상태','비고','오류'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>
-     {checked.map((r:any,i:number)=><tr key={i} className={r.selected===false?'plan-excluded':''}>
+    <div className="tablewrap upload-preview"><table><thead><tr>{['포함','순번 / 원본 위치','원본 품명(참고)','용량','제품 검색 / 선택','제품코드 / 정식 제품명','계획일','계획수량','BOM 버전 / 상태','비고','오류'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>
+     {checked.map((r:any,i:number)=><tr key={r.source||i} className={r.selected===false?'plan-excluded':''}>
       <td><input type="checkbox" aria-label={r.source+' 포함'} checked={r.selected!==false} disabled={busy} onChange={e=>update(i,{selected:e.target.checked})}/></td>
-      <td>{r.sequence||'—'}<br/><small>{r.sheetName} {r.rowNumber}행</small></td><td><input aria-label={r.source+' 품명'} value={r.originalName||''} disabled={busy||!!r.manual} onChange={e=>update(i,{originalName:e.target.value,productName:e.target.value,...matchPlanRow(r.inputCode||'',e.target.value,r.capacity,state.products)})}/></td><td>{r.capacity||'—'}</td>
-      <td><select className="plan-product-select" aria-label={r.source+' 매칭 제품'} value={r.manual?'__manual__':r.product} disabled={busy} onChange={e=>{if(e.target.value==='__manual__'){update(i,{product:'',manual:{name:r.originalName||'',capacity:r.capacity||'',unit:'개',bom:[{code:'',qty:1}]},matchReason:'manual-bom'});ManualPanel(i)}else update(i,{product:e.target.value,manual:undefined,matchReason:'manual'})}}><option value="">제품을 선택하세요</option><option value="__manual__">직접 입력(BOM 수기)</option>{r.candidates?.length>1&&<optgroup label="상위 후보">{r.candidates.map((p:any)=><option key={'candidate-'+p.code} value={p.code}>{p.code} · {p.name}</option>)}</optgroup>}{r.product&&!products.some((p:any)=>p.code===r.product)&&<option value={r.product}>미등록: {r.product}</option>}{products.map((p:any)=><option key={p.code} value={p.code}>{p.code} · {p.name}</option>)}</select><small>{r.manual?<button className="link" onClick={()=>ManualPanel(i)}>수기 BOM 편집</button>:r.matchReason==='auto'?'자동 추천':r.matchReason==='ambiguous'?`후보 ${r.candidateCount}개 · 직접 선택 필요`:r.matchReason==='none'?'일치 제품 없음':r.matchReason==='manual'?'직접 선택':'파일 코드'}</small></td>
+      <td>{r.sequence||'—'}<br/><small>{r.sheetName} {r.rowNumber}행</small></td><td>{r.originalName||'—'}</td><td>{r.capacity||'—'}</td>
+      <td><ProductCombobox products={state.products} value={rows[i]?.search??r.product??''} label={r.source+' 매칭 제품'} disabled={busy} onChange={(search:string)=>updateProduct(i,row=>updatePlanUploadSearch(row,search))} onSelect={(p:any)=>updateProduct(i,row=>selectPlanUploadProduct(row,p))}/><small>{r.manual?<button type="button" className="link" onClick={()=>ManualPanel(i)}>수기 BOM 편집</button>:r.matchReason==='code'?'파일 코드 정확 일치':r.matchReason==='manual'&&r.product?'직접 선택':'직접 선택 필요'}</small>{!r.manual&&<button type="button" className="link" disabled={busy} onClick={()=>{update(i,{product:'',search:'',manual:{name:r.originalName||'',capacity:r.capacity||'',unit:'개',bom:[{code:'',qty:1}]},matchReason:'manual-bom'});ManualPanel(i)}}>수기 BOM 직접 입력</button>}</td>
       <td>{r.product||'—'}<br/>{r.manual?r.manual.name:r.product?r.name:'미선택'}</td><td>{r.date}</td>
       <td className="plan-number"><input aria-label={r.source+' 계획수량'} type="number" step="any" value={rows[i].qty} disabled={busy} onChange={e=>update(i,{qty:e.target.value,quantityRaw:e.target.value,quantityError:false})}/>{r.format==='report'&&!r.quantityError&&<small>{r.quantityFromBatch?'기존 배치 수량 보완':'원본: '+r.quantityRaw}</small>}</td>
       <td>{r.version||'—'} / {r.status}</td><td className="notes-column"><textarea aria-label={r.source+' 비고'} rows={3} value={rows[i].note||''} disabled={busy} onChange={e=>update(i,{note:e.target.value})}/></td><td className={r.selected!==false&&r.error?'negative':''}>{r.selected===false?'제외됨':r.error||'확정 가능'}</td>

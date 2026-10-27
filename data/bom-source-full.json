@@ -1,0 +1,42 @@
+{
+  "safeChanges": [
+    {
+      "productCode": "PC-AQ51",
+      "line": {
+        "code": "MHT-AQ51-PC",
+        "qty": 1.0
+      }
+    },
+    {
+      "productCode": "LC-FX83-2",
+      "line": {
+        "code": "MLT-FX83-PC",
+        "qty": 50.0
+      }
+    },
+    {
+      "productCode": "HC-CE30",
+      "line": {
+        "code": "MHT-CE30-SP",
+        "qty": 1.0
+      }
+    }
+  ],
+  "source": {
+    "PC-AQ51": {
+      "code": "PC-AQ51",
+      "name": "T_아쿠아진마스크_블루35g*50ea",
+      "sheet": "아쿠아진마스크"
+    },
+    "HC-CE30": {
+      "code": "HC-CE30",
+      "name": "C_멜라브라이트닝세럼30ml",
+      "sheet": "멜라브라이트닝세럼"
+    },
+    "HC-RG00": {
+      "code": "HC-RG00",
+      "name": "C_리젠트론미스틱솔루션80ml",
+      "sheet": "리젠트론미스틱솔루션"
+    }
+  }
+}

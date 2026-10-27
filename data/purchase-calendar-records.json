@@ -1,0 +1,344 @@
+[
+  {
+    "id": "po-calendar-2026-2026-10-06-C4",
+    "date": "2026-10-06",
+    "itemName": "NO3 박스 300 EA, NO3 인박스",
+    "quantity": "500EA",
+    "vendor": "영광포장",
+    "rawTitle": "NO3 박스 300 EA, NO3 인박스 500EA [영광포장",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D4",
+    "date": "2026-10-07",
+    "itemName": "넥소RC부스터 2.5*5 C 슬리브",
+    "quantity": "1,491EA",
+    "vendor": "준완",
+    "rawTitle": "넥소RC부스터 2.5*5 C 슬리브 1,491EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D5",
+    "date": "2026-10-07",
+    "itemName": "넥소SD부스터 2.5*5 C 슬리브",
+    "quantity": "1,504EA",
+    "vendor": "준완",
+    "rawTitle": "넥소SD부스터 2.5*5 C 슬리브 1,504EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D6",
+    "date": "2026-10-07",
+    "itemName": "맥스 크림 50ml C 단상자",
+    "quantity": "10,850EA",
+    "vendor": "준완",
+    "rawTitle": "맥스 크림 50ml C 단상자 10,850EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D7",
+    "date": "2026-10-07",
+    "itemName": "맥스 세럼 30ml C 단상자",
+    "quantity": "5,050EA",
+    "vendor": "준완",
+    "rawTitle": "맥스 세럼 30ml C 단상자 5,050EA[준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D8",
+    "date": "2026-10-07",
+    "itemName": "멜라리스필50ml I 단상자",
+    "quantity": "3,620EA",
+    "vendor": "준완",
+    "rawTitle": "멜라리스필50ml I 단상자 3,620EA[준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-07-D9",
+    "date": "2026-10-07",
+    "itemName": "T_아클,멜라리스필50ml 선대",
+    "quantity": "3,270EA",
+    "vendor": "준완",
+    "rawTitle": "T_아클,멜라리스필50ml 선대 3,270EA[준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-12-B16",
+    "date": "2026-10-12",
+    "itemName": "미스틱솔루션 벌크+부자재",
+    "quantity": "",
+    "vendor": "필텍",
+    "rawTitle": "미스틱솔루션 벌크+부자재 [필텍] 외주 납품",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-13-C16",
+    "date": "2026-10-13",
+    "itemName": "디악 크림50ml I 단상자",
+    "quantity": "5,000EA",
+    "vendor": "대하",
+    "rawTitle": "디악 크림50ml I 단상자 5,000EA [대하]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-13-C17",
+    "date": "2026-10-13",
+    "itemName": "디악 스팟젤15ml KE 단상자",
+    "quantity": "6,000EA",
+    "vendor": "대하",
+    "rawTitle": "디악 스팟젤15ml KE 단상자 6,000EA [대하]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-13-C18",
+    "date": "2026-10-13",
+    "itemName": "솔라케어90 50ml KI 단상자",
+    "quantity": "5,450EA",
+    "vendor": "대하",
+    "rawTitle": "솔라케어90 50ml KI 단상자 5,450EA [대하]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-14-D16",
+    "date": "2026-10-14",
+    "itemName": "맥스 크림 50ml 튜브",
+    "quantity": "21,216EA",
+    "vendor": "중국생산",
+    "rawTitle": "맥스 크림 50ml 튜브 21,216EA [중국생산]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-14-D17",
+    "date": "2026-10-14",
+    "itemName": "솔라케어90 50ml KI 단상자",
+    "quantity": "5,450EA",
+    "vendor": "대하",
+    "rawTitle": "솔라케어90 50ml KI 단상자 5,450EA [대하]--재입고",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-15-E16",
+    "date": "2026-10-15",
+    "itemName": "KI솔라케어90 5,-EA 사급원료+부자재>",
+    "quantity": "",
+    "vendor": "에스테르",
+    "rawTitle": "KI솔라케어90 5,-EA 사급원료+부자재>[에스테르]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-15-E17",
+    "date": "2026-10-15",
+    "itemName": "넥소 RC부스터 2.5ml 라벨",
+    "quantity": "12,000EA",
+    "vendor": "금수철인쇄",
+    "rawTitle": "넥소 RC부스터 2.5ml 라벨 12,000EA[금수철인쇄]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-16-F16",
+    "date": "2026-10-16",
+    "itemName": "포스트엔자임젠틀클린저40g 용기",
+    "quantity": "5,000EA",
+    "vendor": "뉴우성",
+    "rawTitle": "포스트엔자임젠틀클린저40g 용기 5,000EA[뉴우성",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-16-F17",
+    "date": "2026-10-16",
+    "itemName": "포스트엔자임젠틀클린저40g 캡",
+    "quantity": "5,000EA",
+    "vendor": "",
+    "rawTitle": "포스트엔자임젠틀클린저40g 캡 5,000EA",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-16-F18",
+    "date": "2026-10-16",
+    "itemName": "포스트엔자임젠틀클린저40g 박킹",
+    "quantity": "5,000EA",
+    "vendor": "",
+    "rawTitle": "포스트엔자임젠틀클린저40g 박킹 5,000EA",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B29",
+    "date": "2026-10-19",
+    "itemName": "1000g 무지 사각용기",
+    "quantity": "5,000EA",
+    "vendor": "청진>우진스크린",
+    "rawTitle": "1000g 무지 사각용기 5,000EA [청진>우진스크린]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B30",
+    "date": "2026-10-19",
+    "itemName": "ECMV HG I 슬리브",
+    "quantity": "1,200EA",
+    "vendor": "준완",
+    "rawTitle": "ECMV HG I 슬리브 1,200EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B31",
+    "date": "2026-10-19",
+    "itemName": "ECMV BR I 슬리브",
+    "quantity": "1,200EA",
+    "vendor": "준완",
+    "rawTitle": "ECMV BR I 슬리브 1,200EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B32",
+    "date": "2026-10-19",
+    "itemName": "RA,HG 공용 스펀지",
+    "quantity": "1,000EA",
+    "vendor": "준완",
+    "rawTitle": "RA,HG 공용 스펀지 1,000EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B33",
+    "date": "2026-10-19",
+    "itemName": "프라임클린징마스크 KE 단상자",
+    "quantity": "5,350EA",
+    "vendor": "준완",
+    "rawTitle": "프라임클린징마스크 KE 단상자 5,350EA[준완",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B34",
+    "date": "2026-10-19",
+    "itemName": "맥스세럼30ml I 단상자",
+    "quantity": "5,950EA",
+    "vendor": "준완",
+    "rawTitle": "맥스세럼30ml I 단상자 5,950EA[준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B35",
+    "date": "2026-10-19",
+    "itemName": "SKM바이오솔루션 C 단상자",
+    "quantity": "2,133EA",
+    "vendor": "준완",
+    "rawTitle": "SKM바이오솔루션 C 단상자 2,133EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B36",
+    "date": "2026-10-19",
+    "itemName": "포스트엔자임클린저40g 박킹",
+    "quantity": "5,040EA",
+    "vendor": "뉴우성",
+    "rawTitle": "포스트엔자임클린저40g 박킹 5,040EA[뉴우성]-재입고",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B38",
+    "date": "2026-10-19",
+    "itemName": "SKMBIOSOLUTIONHGS+H5g",
+    "quantity": "20,080VIAL",
+    "vendor": "천안",
+    "rawTitle": "SKMBIOSOLUTIONHGS+H5g 20,080VIAL [천안]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-19-B39",
+    "date": "2026-10-19",
+    "itemName": "ECMV HG BOOSTER 3ml",
+    "quantity": "2,520VIAL",
+    "vendor": "천안",
+    "rawTitle": "ECMV HG BOOSTER 3ml 2,520VIAL [천안]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-21-D29",
+    "date": "2026-10-21",
+    "itemName": "MV12샷마스크 접지 파우치",
+    "quantity": "20,100EA",
+    "vendor": "윤테크",
+    "rawTitle": "MV12샷마스크 접지 파우치 20,100EA [윤테크]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-22-E29",
+    "date": "2026-10-22",
+    "itemName": "리젠트론미스틱솔루션 8,000EA 양산제품",
+    "quantity": "",
+    "vendor": "필텍",
+    "rawTitle": "리젠트론미스틱솔루션 8,000EA 양산제품 [필텍]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F29",
+    "date": "2026-10-23",
+    "itemName": "T_디악아키덤토너1000g_용기",
+    "quantity": "1,000EA",
+    "vendor": "우진",
+    "rawTitle": "T_디악아키덤토너1000g_용기 1,000EA[우진]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F30",
+    "date": "2026-10-23",
+    "itemName": "T_디악아키덤폼겔1000g_용기",
+    "quantity": "1,000EA",
+    "vendor": "우진",
+    "rawTitle": "T_디악아키덤폼겔1000g_용기 1,000EA[우진]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F31",
+    "date": "2026-10-23",
+    "itemName": "T_엑소리젠트론폼겔1000g_용기",
+    "quantity": "1,000EA",
+    "vendor": "우진",
+    "rawTitle": "T_엑소리젠트론폼겔1000g_용기 1,000EA[우진]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F32",
+    "date": "2026-10-23",
+    "itemName": "T_프라임클린징마스크1000g_용기",
+    "quantity": "2,000EA",
+    "vendor": "우진",
+    "rawTitle": "T_프라임클린징마스크1000g_용기 2,000EA[우진]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F34",
+    "date": "2026-10-23",
+    "itemName": "ECMV HG 공용단상자",
+    "quantity": "1,000EA",
+    "vendor": "준완",
+    "rawTitle": "ECMV HG 공용단상자 1,000EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-23-F35",
+    "date": "2026-10-23",
+    "itemName": "ECMV BR 공용단상자",
+    "quantity": "1,000EA",
+    "vendor": "준완",
+    "rawTitle": "ECMV BR 공용단상자 1,000EA [준완]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-27-C43",
+    "date": "2026-10-27",
+    "itemName": "포스트엔자임젠틀클린저 벌크",
+    "quantity": "100kg",
+    "vendor": "케미랜드",
+    "rawTitle": "포스트엔자임젠틀클린저 벌크 100kg [케미랜드]",
+    "sourceType": "receipt"
+  },
+  {
+    "id": "po-calendar-2026-2026-10-28-D43",
+    "date": "2026-10-28",
+    "itemName": "NO1박스 300EA, 리제닉인박스",
+    "quantity": "500EA",
+    "vendor": "영광포장",
+    "rawTitle": "NO1박스 300EA, 리제닉인박스 500EA [영광포장]",
+    "sourceType": "receipt"
+  }
+]
