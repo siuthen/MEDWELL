@@ -52,3 +52,21 @@
 .two-month-panel>.cardhead{padding-left:0;padding-right:0}
 .material-allocation-table{max-height:none!important;height:auto!important;overflow-x:auto!important;overflow-y:visible!important}
 .material-allocation-table table,.material-allocation-table tbody,.material-allocation-table tr,.material-allocation-table td{height:auto!important;position:static!important}
+
+/* Keep entry warnings visible while long BOM codes wrap within their own column. */
+.direct-plan-entry-table table{table-layout:fixed;width:100%;min-width:860px}
+.direct-plan-entry-table th,.direct-plan-entry-table td{padding-left:8px;padding-right:8px}
+.direct-plan-entry-table th:nth-child(1){width:22%}
+.direct-plan-entry-table th:nth-child(2){width:9%}
+.direct-plan-entry-table th:nth-child(3){width:16%}
+.direct-plan-entry-table th:nth-child(4){width:6%}
+.direct-plan-entry-table th:nth-child(5){width:23%}
+.direct-plan-entry-table th:nth-child(6){width:17%;min-width:130px}
+.direct-plan-entry-table th:nth-child(7){width:7%}
+.direct-plan-entry-table .product-combobox{min-width:0;width:100%}
+.direct-plan-entry-table input{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.direct-plan-entry-table td:nth-child(3){white-space:normal!important;overflow-wrap:anywhere}
+.plan-bom-cell{white-space:normal!important;line-height:1.6;overflow-wrap:anywhere;word-break:break-word}
+.plan-bom-cell br{display:block!important}
+.plan-status-cell{white-space:normal!important;overflow-wrap:anywhere;line-height:1.6}
+.plan-bom-missing,.plan-status-warning{background:#fff0f0;color:#a52727;border-left:3px solid #d44747;font-weight:700}
