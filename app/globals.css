@@ -70,3 +70,5 @@
 .plan-bom-cell br{display:block!important}
 .plan-status-cell{white-space:normal!important;overflow-wrap:anywhere;line-height:1.6}
 .plan-bom-missing,.plan-status-warning{background:#fff0f0;color:#a52727;border-left:3px solid #d44747;font-weight:700}
+
+.production-month-buttons{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px}.production-month-buttons button{flex-shrink:0;display:flex;flex-direction:column;gap:4px;border:1px solid #d8eadf;border-radius:8px;background:#fff;color:#587361;padding:9px 14px}.production-month-buttons button.active{background:var(--menu-active-bg);border-color:#80ad92;color:var(--menu-active-text);font-weight:700}.production-month-buttons small{font-size:11px;font-weight:400}
