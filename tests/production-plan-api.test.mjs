@@ -38,3 +38,29 @@ test('제품 저장/승인/재연결 API 저장 실패 시 제품·계획·재�
 
 test('auto 계획 수정 API: 추가 차감/감액 복원·CAS 1건·idempotency·스냅샷/다른 데이터 보존',async()=>{reset();assert.equal((await actionPost('createDirectProductionPlans',{month:'2026-11',rows:[{product:'P1',qty:10}]},'auto-create',7)).status,200);const state=JSON.parse(stored.payload),id=state.productions[0].id,old=structuredClone(stored),payload={id,date:'2026-11-05',qty:30};assert.equal((await actionPost('productionPlanEdit',payload,'stale-auto',7)).status,409);assert.deepEqual(stored,old);holdUpdates=true;const responses=await Promise.all([actionPost('productionPlanEdit',payload,'auto-a',8),actionPost('productionPlanEdit',payload,'auto-b',8)]);assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);const after=JSON.parse(stored.payload);assert.equal(stored.version,9);assert.equal(after.productions[0].lines[0].qty,60);assert.equal(balances(after,'M1').total,40);assert.equal(after.audit[0].payload.oldQty,10);assert.equal(after.audit[0].payload.deltaQty,20);const once=structuredClone(stored),requestId=after.processed.at(-1);assert.equal((await actionPost('productionPlanEdit',payload,requestId,8)).status,200);assert.deepEqual(stored,once);assert.equal((await actionPost('productionPlanEdit',{...payload,qty:4},'reduce-auto',9)).status,200);const reduced=JSON.parse(stored.payload);assert.equal(balances(reduced,'M1').total,92);assert.equal(reduced.productions[0].version,state.productions[0].version);for(const k of Object.keys(state).filter(k=>!['productions','audit','processed'].includes(k)))assert.deepEqual(reduced[k],state[k]);});
 test('auto 계획 수정 API: version 필수·저장 실패 시 계획/재고/로그/버전 롤백',async()=>{reset();await actionPost('createDirectProductionPlans',{month:'2026-11',rows:[{product:'P1',qty:10}]},'auto-create',7);const before=structuredClone(stored),id=JSON.parse(stored.payload).productions[0].id;assert.equal((await POST(new Request('https://test.invalid/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'productionPlanEdit',requestId:'missing',payload:{id,date:'2026-11-01',qty:20}})}))).status,400);assert.deepEqual(stored,before);const original=db.prepare;db.prepare=function(sql){if(sql.startsWith('UPDATE'))return {bind(){return this},async run(){throw Error('fixture storage failure')}};return original.call(this,sql)};try{assert.equal((await actionPost('productionPlanEdit',{id,date:'2026-11-01',qty:20},'failed',8)).status,400);assert.deepEqual(stored,before);}finally{db.prepare=original;}});
+
+test('창고 변경 API는 version CAS 한 건과 요청 ID 재시도만 허용하고 실패 시 데이터 무변경',async()=>{
+ reset();
+ const postWarehouse=(type,payload,requestId,expectedVersion)=>POST(new Request('https://test.invalid/api/state',{
+  method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,payload,requestId,expectedVersion})
+ }));
+ const original=structuredClone(stored);
+ assert.equal((await postWarehouse('warehouseCreate',{name:'신규'},'stale',6)).status,409);
+ assert.equal((await postWarehouse('warehouseDelete',{warehouse:'김포창고'},'blocked',7)).status,400);
+ assert.deepEqual(stored,original);
+ holdUpdates=true;
+ const results=await Promise.all([
+  postWarehouse('warehouseCreate',{name:'신규 A'},'create-a',7),
+  postWarehouse('warehouseCreate',{name:'신규 B'},'create-b',7)
+ ]);
+ assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);
+ const once=structuredClone(stored),saved=JSON.parse(stored.payload);
+ assert.equal(stored.version,8);
+ assert.equal(saved.audit.filter(row=>row.type==='warehouseCreate').length,1);
+ assert.equal((await postWarehouse('warehouseCreate',{name:'다른 이름'},saved.processed.at(-1),7)).status,200);
+ assert.deepEqual(stored,once);
+ const name=saved.warehouses.at(-1);
+ assert.equal((await postWarehouse('warehouseRename',{warehouse:name,name:'변경'},'rename',8)).status,200);
+ assert.equal((await postWarehouse('warehouseDelete',{warehouse:'변경'},'delete',9)).status,200);
+ assert.deepEqual(JSON.parse(stored.payload).warehouses,['김포창고','오류창고']);
+});

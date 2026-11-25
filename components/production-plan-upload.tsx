@@ -1,4 +1,5 @@
 'use client';
+import {warehouseNames} from '../lib/warehouse-data.mjs';
 import {useState,useRef} from 'react';
 import {readInventoryFile} from '../lib/read-inventory-file';
 import {planToday} from '../lib/production-plan.mjs';
@@ -18,7 +19,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
  const [manualPanel,ManualPanel]=useState<number|null>(null);
  const inferred=inferPlanPeriod(rows),start=periodTouched?periodStart:inferred?.periodStart||periodStart,end=periodTouched?periodEnd:inferred?.periodEnd||periodEnd;
  let period:any=null,periodError='',old:any=null;try{period=periodValue(start,end);old=activeBatch(state,period.periodKey);}catch(e:any){periodError=e.message;}
- const {checked,included,invalid,deductions,payloadRows,allocations}:any=planUploadPreview(rows,state,'김포창고',defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});
+ const {checked,included,invalid,deductions,payloadRows,allocations}:any=planUploadPreview(rows,state,warehouseNames(state)[0],defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});
  if(period&&included.some((r:any)=>r.date.slice(0,7)<start||r.date.slice(0,7)>end))periodError='포함된 계획일이 선택한 계획기간 밖에 있습니다.';
  const stale=baseVersion!==version;
  const blocked=busy||!included.length||!!invalid.length||!!issues.length||stale||!defaultDate||!!periodError;
@@ -36,7 +37,7 @@ export default function ProductionPlanUpload({state,version,onClose,onSaved}:any
   try{const response=await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:baseVersion,requestId,type:'replaceProductionPlanBatch',payload:{rows:payloadRows,allocationMode:'auto',fileName,periodStart:start,periodEnd:end,expectedBatchId:old?.batchId||null}})}),result:any=await response.json();if(!response.ok)throw new Error(result.error);await onSaved(result);onClose();}
   catch(e:any){ErrorText(e.message)}finally{Busy(false)}
  }
- function download(){try{if(!original)return;const fresh=planUploadPreview(latestRows.current,state,'김포창고',defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});if(!fresh.included.length||fresh.invalid.length)throw Error(fresh.invalid.map((r:any)=>r.source+': '+r.error).join('\n')||'포함할 계획을 선택하세요.');const bytes=buildProductionXlsx({original,plans:fresh.included,state,balance:(code:string)=>balances(state,code),periodKey:period?.periodKey||'기간 미확정',excludeBatchId:old?.batchId||null});downloadXlsx(bytes,autoFileName(fileName));}catch(e:any){ErrorText(e.message)}}
+ function download(){try{if(!original)return;const fresh=planUploadPreview(latestRows.current,state,warehouseNames(state)[0],defaultDate,(code:string)=>balances(state,code),{allowPeriodDates:true,activeRows:old?batchRows(state,old.batchId):[],autoAllocation:true,excludeBatchId:old?.batchId||null});if(!fresh.included.length||fresh.invalid.length)throw Error(fresh.invalid.map((r:any)=>r.source+': '+r.error).join('\n')||'포함할 계획을 선택하세요.');const bytes=buildProductionXlsx({original,plans:fresh.included,state,balance:(code:string)=>balances(state,code),periodKey:period?.periodKey||'기간 미확정',excludeBatchId:old?.batchId||null});downloadXlsx(bytes,autoFileName(fileName));}catch(e:any){ErrorText(e.message)}}
  return <div className="overlay"><section className="modal inventory-upload" role="dialog" aria-modal="true" aria-label="생산계획 엑셀 업로드">
   <div className="cardhead"><h2>생산계획 엑셀 업로드</h2><button className="secondary" disabled={busy} onClick={onClose}>닫기</button></div>
   <div className="upload-content">
