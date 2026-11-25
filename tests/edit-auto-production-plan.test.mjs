@@ -13,3 +13,18 @@ test('취소/삭제/교체/배치/품목변경/0/빈 수량/음수/NaN/양쪽 �
 test('실제 데이터월만 표시·서울 fallback·월 필터 취소 포함·월 합계',()=>{const plans=[{date:'2026-10-01',plannedQty:9},{date:'2026-11-01',plannedQty:3936,product:'HKE-PR40',lines:[{qty:7872}]},{date:'2026-11-20',plannedQty:4,cancelled:true},{date:'2027-02-01',plannedQty:8}];assert.equal(seoulPlanMonth(new Date('2026-11-30T15:00:00Z')),'2026-12');assert.deepEqual(productionMonths(plans,new Date('2026-11-01T00:00:00Z')),['2026-11','2027-02']);assert.equal(selectedPlanMonth(['2026-11'],'2026-10'),'2026-11');assert.equal(plansForMonth(plans,'2026-11').length,2);assert.equal(planMonthTotal(plans,'2026-11'),3940);assert.equal(plansForMonth(plans,'2026-11')[0].lines[0].qty,7872);assert.deepEqual(productionMonths([],new Date('2026-09-01T00:00:00Z')),['2026-11']);assert.ok(canEditProductionPlan({kind:'productionPlan',allocationMode:'auto'}));assert.ok(!canEditProductionPlan({kind:'productionPlan',allocationMode:'auto',batchId:'b'}));});
 
 test('연결 제조 일정은 일반 생산계획 수정 요청으로 해제할 수 없음',()=>{const s=fixture(),p=s.productions[0];p.scheduleId='schedule:linked';s.schedules=[{id:'schedule:linked',date:'2026-11-03',endDate:'2026-11-05',scheduleKind:'manufacturing',productionPlanId:p.id,title:p.name,productCode:p.product,quantity:p.plannedQty}];const before=structuredClone(s);assert.throws(()=>edit(s,50,'unlink-attempt'),/해제할 수 없습니다/);assert.deepEqual(s,before)});
+
+test('계획월·기존 제조 시작월·새 제조 시작월 중 마감월이 있으면 수량과 BOM을 보존',()=>{
+ for(const closedMonth of ['2026-11','2026-12','2027-01']){
+  const s=fixture(),plan=s.productions[0];
+  plan.planMonth='2026-11';
+  plan.date='2026-10-20';
+  plan.scheduleId='schedule:linked';
+  s.schedules=[{id:plan.scheduleId,date:'2026-12-01',endDate:'2026-12-03',productionPlanId:plan.id,scheduleKind:'manufacturing'}];
+  s.closes[closedMonth]={};
+  const before=structuredClone(s),stock=balances(s,'M');
+  assert.throws(()=>edit(s,50,'closed-edit','2026-10-21',{manufacturingStart:'2027-01-04',manufacturingEnd:'2027-01-06'}),/마감월/);
+  assert.deepEqual(s,before);
+  assert.deepEqual(balances(s,'M'),stock);
+ }
+});

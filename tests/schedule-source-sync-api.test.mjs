@@ -33,7 +33,7 @@ test('최초 원자 교체: opaque SHA-256 ID, 수동 일정·운영 컬렉션 b
 
 test('동일 payload와 requestId 재시도는 version/audit/write가 증가하지 않는 no-op',async()=>{reset();await post(body());const once=structuredClone(stored),same={...body({expectedVersion:37,requestId:'same-content'}),schedules:[schedules[1],schedules[0]]};const response=await post(same),result=await response.json();assert.equal(response.status,200);assert.equal(result.changed,false);assert.equal(result.version,37);assert.deepEqual(stored,once);assert.equal(writes,1);const replay=await post(body({expectedVersion:36}));assert.equal(replay.status,200);assert.equal((await replay.json()).changed,false);assert.deepEqual(stored,once);});
 
-test('원본 수정·삭제를 전체 교체로 반영하고 감사로그는 실제 변경당 1건',async()=>{reset();await post(body());const before=JSON.parse(stored.payload),payload=[{...schedules[0],title:'수정된 품목'}];const response=await post(body({expectedVersion:37,requestId:'sync-2',syncedAt:'2026-10-20T09:00:00+09:00',schedules:payload})),result=await response.json();assert.equal(response.status,200);assert.deepEqual(result.counts,{managed:1,added:0,updated:1,removed:1,preserved:1});const after=JSON.parse(stored.payload);assert.equal(after.schedules.find(x=>x.sourceId===schedules[0].sourceId).title,'수정된 품목');assert.equal(after.schedules.some(x=>x.sourceId===schedules[1].sourceId),false);assert.equal(after.schedules.some(x=>x.id==='schedule:manual'),true);assert.equal(after.audit.length,before.audit.length+1);});
+test('원본 수정·삭제를 전체 교체로 반영하고 감사로그는 실제 변경당 1건',async()=>{reset();await post(body());const before=JSON.parse(stored.payload),payload=[{...schedules[0],title:'수정된 품목'}];payload.push({...schedules[1],sourceId:'receipt:replacement'});const response=await post(body({expectedVersion:37,requestId:'sync-2',syncedAt:'2026-10-20T09:00:00+09:00',schedules:payload})),result=await response.json();assert.equal(response.status,200);assert.deepEqual(result.counts,{managed:2,added:1,updated:1,removed:1,preserved:1});const after=JSON.parse(stored.payload);assert.equal(after.schedules.find(x=>x.sourceId===schedules[0].sourceId).title,'수정된 품목');assert.equal(after.schedules.some(x=>x.sourceId===schedules[1].sourceId),false);assert.equal(after.schedules.some(x=>x.id==='schedule:manual'),true);assert.equal(after.audit.length,before.audit.length+1);});
 
 test('주말·중복·임의 필드·길이·최대 건수·version 충돌은 저장 전 거절',async()=>{reset();const before=structuredClone(stored),cases=[body({schedules:[{...schedules[0],date:'2026-10-24'}]}),body({schedules:[schedules[0],schedules[0]]}),body({schedules:[{...schedules[0],sourceUrl:'https://docs.google.com/private'}]}),body({schedules:[{...schedules[0],sourceId:'receipt:wrong'}]}),body({schedules:[{...schedules[0],title:'x'.repeat(2001)}]}),body({schedules:Array.from({length:1001},(_,i)=>({...schedules[0],sourceId:'qc:'+i}))})];for(const value of cases){const response=await post(value);assert.equal(response.status,400);assert.deepEqual(stored,before);}const conflict=await post(body({expectedVersion:35,requestId:'conflict'}));assert.equal(conflict.status,409);assert.deepEqual(stored,before);assert.equal(writes,0);});
 
@@ -42,3 +42,38 @@ test('v37 원문 ID는 다음 sync에서 opaque 저장 ID로 원자 교체되고
 test('재동기화 전 공개 opaque ID로 기존 v37 일정을 수정·삭제할 수 있다',()=>{const state=initial(),sourceId='qc:2026_10:B10',rawId='source-sync:'+sourceId,publicId=opaqueSourceScheduleId(sourceId);state.schedules=[{id:rawId,sourceType:'qc',sourceId,date:'2026-10-20',title:'기존'}];applySchedule(state,'scheduleEdit',{id:publicId,date:'2026-10-21',title:'수정',note:''},'opaque-edit','fixture','2026-10-20T00:00:00Z');assert.equal(state.schedules[0].id,rawId);assert.equal(state.schedules[0].title,'수정');applySchedule(state,'scheduleDelete',{id:publicId},'opaque-delete','fixture','2026-10-20T00:01:00Z');assert.equal(state.schedules[0].deleted,true);});
 
 test('공개 state는 v37 원문 ID도 opaque 처리하고 sourceId·좌표·Google URL을 노출하지 않는다',()=>{const state=initial(),sourceId='qc:2026_10:B10';state.schedules=[{id:'source-sync:'+sourceId,sourceType:'qc',sourceId,sourceUrl:'https://docs.google.com/spreadsheets/d/private',sourceSheet:'2026_10',sourceCell:'B10',date:'2026-10-20',title:'공개 일정'}];const visible=publicState(state),text=JSON.stringify(visible);assert.equal(visible.schedules[0].id,opaqueSourceScheduleId(sourceId));assert.match(visible.schedules[0].id,/^source-sync:[a-f0-9]{40}$/);assert.doesNotMatch(text,/sourceId|sourceUrl|sourceSheet|sourceCell|qc:|receipt:|\d{4}_\d{2}:[A-Z]+\d+|\d{6}:[A-Z]+\d+|docs\.google|sheets\.google/i);assert.equal(visible.schedules[0].title,'공개 일정');});
+
+test('공유시트 추출이 비었거나 한 종류만 성공하면 일정과 동기화 성공 기록을 보존',async()=>{
+ reset();
+ assert.equal((await post(body())).status,200);
+ const before=structuredClone(stored),successes=new Map(receipts);
+ for(const partial of [[],[schedules[0]],[schedules[1]]]){
+  const response=await post(body({requestId:'partial',schedules:partial}));
+  assert.equal(response.status,400);
+  assert.match((await response.json()).error,/QC와 입고.*각각 1건/);
+  assert.deepEqual(stored,before);
+  assert.deepEqual(receipts,successes);
+ }
+ assert.equal(writes,1);
+});
+
+test('동일한 원본의 삭제된 QC와 취소된 입고를 다음 정상 동기화에서 복구',async()=>{
+ reset();
+ assert.equal((await post(body())).status,200);
+ const state=JSON.parse(stored.payload);
+ const qc=state.schedules.find(row=>row.sourceType==='qc'&&row.sourceId);
+ const receipt=state.schedules.find(row=>row.sourceType==='receipt');
+ applySchedule(state,'scheduleDelete',{id:qc.id},'delete-qc','fixture','2026-10-20T00:00:00Z');
+ receipt.cancelled=true;
+ stored={version:38,payload:JSON.stringify(state)};
+ const response=await post(body({requestId:'restore'})),result=await response.json();
+ assert.equal(response.status,200);
+ assert.equal(result.changed,true);
+ assert.equal(result.version,39);
+ assert.deepEqual(result.counts,{managed:2,added:0,updated:2,removed:0,preserved:1});
+ const restored=JSON.parse(stored.payload).schedules.filter(isManaged=>isManaged.sourceId);
+ assert.deepEqual(restored.map(row=>row.id),[qc.id,receipt.id]);
+ assert.ok(restored.every(row=>!row.deleted&&!row.cancelled));
+ assert.equal((await (await post(body({requestId:'verify-restored'}))).json()).changed,false);
+ assert.equal(writes,2);
+});
