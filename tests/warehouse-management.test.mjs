@@ -108,3 +108,16 @@ test('추가 창고를 입고·이동·조정·계획·재고 파일에서 사�
  assert.match(page,/select\('출발창고','from',warehouses\)/);
  assert.match(page,/select\('도착창고','to',warehouses\)/);
 });
+
+test('창고 관리 모달은 재고 수정 입력 스타일과 설명, 행별 동작, 모바일 배치를 공유',()=>{
+ const ui=readFileSync(new URL('../components/warehouse-manager.tsx',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
+ assert.match(ui,/className="modal warehouse-manager"[^>]+aria-describedby="warehouse-description"/);
+ assert.match(ui,/<Warehouse size=\{16\} aria-hidden="true"/);
+ assert.match(ui,/className="secondary warehouse-delete"/);
+ assert.equal((ui.match(/className="fields warehouse-form"/g)||[]).length,2);
+ assert.match(ui,/<section className="warehouse-create"[^>]+>[\s\S]*새 창고명[\s\S]*aria-describedby="warehouse-create-help"/);
+ assert.match(css,/\.warehouse-body\{padding:24px\}/);
+ assert.match(css,/\.warehouse-list li,\.warehouse-create\{[^}]*border-radius:10px[^}]*background:/);
+ assert.match(css,/@media\(max-width:520px\)\{[\s\S]*\.warehouse-body \.warehouse-form\{grid-template-columns:1fr\}/);
+});
