@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 const page=await readFile(new URL('../app/page.tsx',import.meta.url),'utf8'),lookup=await readFile(new URL('../components/production-plan-lookup.tsx',import.meta.url),'utf8');
 const lookupHeader=page.match(/production-lookup-head"[^>]*>(.*?)<\/div>/s)?.[1]??'';
-test('생산계획 조회는 제품명·계획수량·계획월·제조일·BOM·수정삭제로 구성',()=>{for(const label of ['제품명','계획수량','계획월','제조일','수정·삭제'])assert.match(lookupHeader,new RegExp(label));assert.match(page,/ProductionPlanLookup/);for(const label of ['부자재','필요수량','통합 현재고','발주일','입고일'])assert.match(lookup,new RegExp(label));for(const old of ['총 자재 차감량','재고 반영'])assert.doesNotMatch(lookupHeader+lookup,new RegExp(old));});
+test('생산계획 조회는 제품명·계획수량·계획월·제조일·BOM·수정삭제로 구성',()=>{for(const label of ['제품명','계획수량','계획월','제조일','수정·삭제'])assert.match(lookupHeader,new RegExp(label));assert.match(page,/ProductionPlanLookup/);for(const label of ['부자재','필요수량','계획 반영 재고','발주일','입고일'])assert.match(lookup,new RegExp(label));for(const old of ['총 자재 차감량','재고 반영'])assert.doesNotMatch(lookupHeader+lookup,new RegExp(old));});
 test('조회는 exact 코드 기반 파생 BOM 도우미와 양방향 삭제 액션 사용',()=>{assert.match(lookup,/productionMaterialRows/);assert.match(lookup,/productionPlanDelete/);assert.match(lookup,/confirm\(/);});
 test('취소·비활성 생산계획은 상태를 표시하고 수정·삭제를 비활성화',()=>{assert.match(lookup,/canEditProductionPlan/);assert.match(lookup,/status=.*취소/);assert.match(lookup,/disabled=\{!editable\}/);});
 
@@ -52,13 +52,20 @@ test('BOM 표는 7개 열, 단위·천 단위 발주 합계, 음수 재고, 미�
    {id:'a1',code:'A',qty:1000,date:'2026-11-02'},{id:'a2',code:'A',qty:2500,date:'2026-11-03'}
   ],receipts:[]};
   const html=renderToStaticMarkup(createElement(Lookup,{state,plans:[plan]}));
-  assert.deepEqual([...html.matchAll(/<th scope="col">([^<]+)<\/th>/g)].map(match=>match[1]),[
-   '부자재 코드','부자재명','필요수량','통합 현재고','발주수량','발주일','입고일'
+  assert.deepEqual([...html.matchAll(/<th scope="col">(.*?)<\/th>/g)].map(match=>{
+   return match[1].match(/aria-describedby="[^"]+">([^<]+)<\/span>/)?.[1]??match[1];
+  }),[
+   '부자재 코드','부자재명','필요수량','계획 반영 재고','발주수량','발주일','입고일'
   ]);
+  const helpId=html.match(/class="planned-stock-label" tabindex="0" aria-describedby="([^"]+)">계획 반영 재고/)?.[1];
+  assert.ok(helpId);
+  assert.ok(html.includes(`id="${helpId}" role="tooltip">현재 재고에서 확정 생산계획의 필요수량을 차감한 수량</span>`));
+  assert.doesNotMatch(html,/통합 현재고/);
   assert.match(html,/<td>A<\/td><td><b>부자재 A<\/b><\/td><td>2,000 EA<\/td><td class="negative">-2,000 EA<\/td><td>3,500 EA<\/td>/);
   assert.match(html,/<summary>2026-11-02 외 1건<\/summary>/);
   assert.match(html,/<td>B<\/td><td><b>B<\/b><\/td><td>0<\/td><td>0<\/td><td>-<\/td><td><span>-<\/span><\/td><td>-<\/td>/);
   const css=await readFile(new URL('../app/globals.css',import.meta.url),'utf8');
+  assert.match(css,/\.planned-stock-heading:hover \.planned-stock-tooltip,\.planned-stock-heading:focus-within \.planned-stock-tooltip\{visibility:visible\}/);
   assert.match(css,/\.production-bom-inline\{[^}]*overflow-x:auto/);
  }finally{await unlink(file);}
 });

@@ -1,11 +1,21 @@
 'use client';
+import {useId} from 'react';
 import {productionMaterialRows,productionPlanMonth,manufacturingRange} from '../lib/production-lookup.mjs';
 import {planQuantity} from '../lib/production-plan.mjs';
 import {canEditProductionPlan} from '../lib/production-months.mjs';
 
 const nf=(v:number)=>v.toLocaleString('ko-KR');
 const formatQuantity=(quantity:number|null,unit:string)=>quantity===null?'-':[nf(quantity),unit].filter(Boolean).join(' ');
-const bomColumns=['부자재 코드','부자재명','필요수량','통합 현재고','발주수량','발주일','입고일'];
+const stockColumn='계획 반영 재고';
+const bomColumns=['부자재 코드','부자재명','필요수량',stockColumn,'발주수량','발주일','입고일'];
+
+function PlannedStockHeading(){
+ const descriptionId=useId();
+ return <span className="planned-stock-heading">
+  <span className="planned-stock-label" tabIndex={0} aria-describedby={descriptionId}>{stockColumn}</span>
+  <span className="planned-stock-tooltip" id={descriptionId} role="tooltip">현재 재고에서 확정 생산계획의 필요수량을 차감한 수량</span>
+ </span>;
+}
 
 function DateDetails({rows,kind,unit}:{
  rows:{id:string;date?:string;expected?:string;paid?:number;free?:number}[];
@@ -42,7 +52,7 @@ export default function ProductionPlanLookup({state,plans,version,onSaved,onEdit
    </div>
    {materials.length?<div className="production-bom-inline" role="region" aria-label={p.name+' BOM 상세'} tabIndex={0}>
     <table className="production-bom-table">
-     <thead><tr>{bomColumns.map(label=><th key={label} scope="col">{label}</th>)}</tr></thead>
+     <thead><tr>{bomColumns.map(label=><th key={label} scope="col">{label===stockColumn?<PlannedStockHeading/>:label}</th>)}</tr></thead>
      <tbody>{materials.map((m:any)=>{
       const expected=m.orders[0]?.expected;
       return <tr key={m.code}>

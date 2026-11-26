@@ -113,3 +113,10 @@
 .production-bom-table :is(th,td):nth-child(n+3):nth-child(-n+5){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .production-bom-table :is(th,td):nth-child(n+6){min-width:122px;white-space:nowrap}
 .production-bom-table details small{margin-top:.25rem}
+
+
+.planned-stock-heading{position:relative;display:inline-block}
+.planned-stock-label{border-bottom:1px dotted currentColor;cursor:help}
+.planned-stock-label:focus-visible{outline:2px solid #42694e;outline-offset:3px}
+.planned-stock-tooltip{position:absolute;top:100%;right:0;z-index:2;width:max-content;max-width:220px;padding:.45rem .6rem;border-radius:6px;background:#263b31;color:#fff;font-weight:400;line-height:1.5;white-space:normal;text-align:left;visibility:hidden}
+.planned-stock-heading:hover .planned-stock-tooltip,.planned-stock-heading:focus-within .planned-stock-tooltip{visibility:visible}
