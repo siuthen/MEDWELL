@@ -106,16 +106,20 @@
 
 
 .production-bom-inline{min-width:0;max-width:100%;margin-top:.8rem;border:1px solid #e2e8f0;border-radius:.6rem;overflow-x:auto}
-.production-bom-table{width:100%;min-width:760px;font-size:12px}
-.production-bom-table th,.production-bom-table td{padding:.6rem .75rem;text-align:left;font-size:inherit}
+.production-bom-table{width:100%;min-width:940px;table-layout:fixed;font-size:12px}
+.production-bom-table .bom-code-col{width:13%}
+.production-bom-table .bom-name-col{width:25%}
+.production-bom-table .bom-quantity-col{width:12%}
+.production-bom-table .bom-date-col{width:13%}
+.production-bom-table th,.production-bom-table td{height:40px;padding:.5rem .75rem;font-size:inherit;line-height:1.5;vertical-align:middle}
 .production-bom-table th{background:#f8fafc;color:#475569;font-weight:700}
-.production-bom-table td:nth-child(2){width:100%;min-width:170px;overflow-wrap:anywhere}
-.production-bom-table :is(th,td):nth-child(n+3):nth-child(-n+5){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.production-bom-table :is(th,td):nth-child(n+6){min-width:122px;white-space:nowrap}
+.production-bom-table .bom-text{text-align:left;overflow-wrap:anywhere}
+.production-bom-table .bom-number{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.production-bom-table .bom-date{text-align:center;white-space:nowrap}
+.production-bom-table .bom-date :is(details,summary){text-align:center}
 .production-bom-table details small{margin-top:.25rem}
 
-
-.planned-stock-heading{position:relative;display:inline-block}
+.planned-stock-heading{position:relative;display:inline-flex;justify-content:flex-end;vertical-align:baseline}
 .planned-stock-label{border-bottom:1px dotted currentColor;cursor:help}
 .planned-stock-label:focus-visible{outline:2px solid #42694e;outline-offset:3px}
 .planned-stock-tooltip{position:absolute;top:100%;right:0;z-index:2;width:max-content;max-width:220px;padding:.45rem .6rem;border-radius:6px;background:#263b31;color:#fff;font-weight:400;line-height:1.5;white-space:normal;text-align:left;visibility:hidden}

@@ -7,7 +7,15 @@ import {canEditProductionPlan} from '../lib/production-months.mjs';
 const nf=(v:number)=>v.toLocaleString('ko-KR');
 const formatQuantity=(quantity:number|null,unit:string)=>quantity===null?'-':[nf(quantity),unit].filter(Boolean).join(' ');
 const stockColumn='계획 반영 재고';
-const bomColumns=['부자재 코드','부자재명','필요수량',stockColumn,'발주수량','발주일','입고일'];
+const bomColumns=[
+ {label:'부자재 코드',width:'bom-code-col',alignment:'bom-text'},
+ {label:'부자재명',width:'bom-name-col',alignment:'bom-text'},
+ {label:'필요수량',width:'bom-quantity-col',alignment:'bom-number'},
+ {label:stockColumn,width:'bom-quantity-col',alignment:'bom-number'},
+ {label:'발주수량',width:'bom-quantity-col',alignment:'bom-number'},
+ {label:'발주일',width:'bom-date-col',alignment:'bom-date'},
+ {label:'입고일',width:'bom-date-col',alignment:'bom-date'}
+];
 
 function PlannedStockHeading(){
  const descriptionId=useId();
@@ -52,17 +60,18 @@ export default function ProductionPlanLookup({state,plans,version,onSaved,onEdit
    </div>
    {materials.length?<div className="production-bom-inline" role="region" aria-label={p.name+' BOM 상세'} tabIndex={0}>
     <table className="production-bom-table">
-     <thead><tr>{bomColumns.map(label=><th key={label} scope="col">{label===stockColumn?<PlannedStockHeading/>:label}</th>)}</tr></thead>
+     <colgroup>{bomColumns.map(({label,width})=><col key={label} className={width}/>)}</colgroup>
+     <thead><tr>{bomColumns.map(({label,alignment})=><th key={label} scope="col" className={alignment}>{label===stockColumn?<PlannedStockHeading/>:label}</th>)}</tr></thead>
      <tbody>{materials.map((m:any)=>{
       const expected=m.orders[0]?.expected;
       return <tr key={m.code}>
-       <td>{m.code}</td>
-       <td><b>{m.name}</b></td>
-       <td>{formatQuantity(m.required,m.unit)}</td>
-       <td className={m.stock<0?'negative':undefined}>{formatQuantity(m.stock,m.unit)}</td>
-       <td>{formatQuantity(m.orderQuantity,m.unit)}</td>
-       <td><DateDetails rows={m.orders} kind="order" unit={m.unit}/></td>
-       <td>{m.receipts.length?<DateDetails rows={m.receipts} kind="receipt" unit={m.unit}/>:expected?`${expected} 예정`:'-'}</td>
+       <td className="bom-text">{m.code}</td>
+       <td className="bom-text"><b>{m.name}</b></td>
+       <td className="bom-number">{formatQuantity(m.required,m.unit)}</td>
+       <td className={m.stock<0?'bom-number negative':'bom-number'}>{formatQuantity(m.stock,m.unit)}</td>
+       <td className="bom-number">{formatQuantity(m.orderQuantity,m.unit)}</td>
+       <td className="bom-date"><DateDetails rows={m.orders} kind="order" unit={m.unit}/></td>
+       <td className="bom-date">{m.receipts.length?<DateDetails rows={m.receipts} kind="receipt" unit={m.unit}/>:expected?`${expected} 예정`:'-'}</td>
       </tr>;
      })}</tbody>
     </table>

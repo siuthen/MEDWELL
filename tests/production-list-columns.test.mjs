@@ -52,20 +52,33 @@ test('BOM 표는 7개 열, 단위·천 단위 발주 합계, 음수 재고, 미�
    {id:'a1',code:'A',qty:1000,date:'2026-11-02'},{id:'a2',code:'A',qty:2500,date:'2026-11-03'}
   ],receipts:[]};
   const html=renderToStaticMarkup(createElement(Lookup,{state,plans:[plan]}));
-  assert.deepEqual([...html.matchAll(/<th scope="col">(.*?)<\/th>/g)].map(match=>{
+  assert.deepEqual([...html.matchAll(/<th scope="col" class="[^"]+">(.*?)<\/th>/g)].map(match=>{
    return match[1].match(/aria-describedby="[^"]+">([^<]+)<\/span>/)?.[1]??match[1];
   }),[
    '부자재 코드','부자재명','필요수량','계획 반영 재고','발주수량','발주일','입고일'
   ]);
+  const columnClasses=['bom-code-col','bom-name-col','bom-quantity-col','bom-quantity-col','bom-quantity-col','bom-date-col','bom-date-col'];
+  const alignmentClasses=['bom-text','bom-text','bom-number','bom-number','bom-number','bom-date','bom-date'];
+  assert.deepEqual([...html.matchAll(/<col class="([^"]+)"/g)].map(match=>match[1]),columnClasses);
+  assert.deepEqual([...html.matchAll(/<th scope="col" class="([^"]+)"/g)].map(match=>match[1]),alignmentClasses);
+  for(const [,row] of html.matchAll(/<tr>(<td.*?<\/td>)<\/tr>/g)){
+   assert.deepEqual([...row.matchAll(/<td class="([^ "]+)[^"]*"/g)].map(match=>match[1]),alignmentClasses);
+  }
   const helpId=html.match(/class="planned-stock-label" tabindex="0" aria-describedby="([^"]+)">계획 반영 재고/)?.[1];
   assert.ok(helpId);
   assert.ok(html.includes(`id="${helpId}" role="tooltip">현재 재고에서 확정 생산계획의 필요수량을 차감한 수량</span>`));
   assert.doesNotMatch(html,/통합 현재고/);
-  assert.match(html,/<td>A<\/td><td><b>부자재 A<\/b><\/td><td>2,000 EA<\/td><td class="negative">-2,000 EA<\/td><td>3,500 EA<\/td>/);
+  assert.match(html,/<td class="bom-text">A<\/td><td class="bom-text"><b>부자재 A<\/b><\/td><td class="bom-number">2,000 EA<\/td><td class="bom-number negative">-2,000 EA<\/td><td class="bom-number">3,500 EA<\/td>/);
   assert.match(html,/<summary>2026-11-02 외 1건<\/summary>/);
-  assert.match(html,/<td>B<\/td><td><b>B<\/b><\/td><td>0<\/td><td>0<\/td><td>-<\/td><td><span>-<\/span><\/td><td>-<\/td>/);
+  assert.match(html,/<td class="bom-text">B<\/td><td class="bom-text"><b>B<\/b><\/td><td class="bom-number">0<\/td><td class="bom-number">0<\/td><td class="bom-number">-<\/td><td class="bom-date"><span>-<\/span><\/td><td class="bom-date">-<\/td>/);
   const css=await readFile(new URL('../app/globals.css',import.meta.url),'utf8');
   assert.match(css,/\.planned-stock-heading:hover \.planned-stock-tooltip,\.planned-stock-heading:focus-within \.planned-stock-tooltip\{visibility:visible\}/);
+  assert.match(css,/\.production-bom-table\{[^}]*min-width:940px;table-layout:fixed/);
+  assert.match(css,/\.production-bom-table \.bom-text\{text-align:left/);
+  assert.match(css,/\.production-bom-table \.bom-number\{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums/);
+  assert.match(css,/\.production-bom-table \.bom-date\{text-align:center;white-space:nowrap/);
+  assert.match(css,/\.production-bom-table \.bom-date :is\(details,summary\)\{text-align:center/);
+  assert.match(css,/\.planned-stock-heading\{[^}]*display:inline-flex;justify-content:flex-end/);
   assert.match(css,/\.production-bom-inline\{[^}]*overflow-x:auto/);
  }finally{await unlink(file);}
 });
